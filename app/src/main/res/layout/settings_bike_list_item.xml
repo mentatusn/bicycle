@@ -1,0 +1,83 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/nameTextInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Название"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.8">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/nameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/priceTextInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Цена"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nameTextInputLayout"
+        app:layout_constraintWidth_percent="0.8">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/priceEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/durationTextInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Длительность"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/priceTextInputLayout"
+        app:layout_constraintWidth_percent="0.8">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/rentDurationEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/colorLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Color:"
+        app:layout_constraintBottom_toBottomOf="@+id/colorLinearLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/durationTextInputLayout" />
+
+    <LinearLayout
+        android:id="@+id/colorLinearLayout"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:background="@color/white"
+        android:foreground="?attr/selectableItemBackground"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        app:layout_constraintEnd_toEndOf="@+id/durationTextInputLayout"
+        app:layout_constraintStart_toStartOf="@+id/durationTextInputLayout"
+        app:layout_constraintTop_toBottomOf="@+id/durationTextInputLayout">
+
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
