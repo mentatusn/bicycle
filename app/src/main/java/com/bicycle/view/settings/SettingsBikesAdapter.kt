@@ -2,6 +2,7 @@ package com.bicycle.view.settings
 
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.LayerDrawable
+import android.icu.util.UniversalTimeScale.toLong
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -54,8 +55,15 @@ class SettingsBikesAdapter(
 
             // Заполните другие поля значениями из объекта Bike
 
+            nameEditText.doOnTextChanged { text, _, _, _ ->
+                onBikeUpdated(bike.copy(name = text.toString()))
+            }
             priceEditText.doOnTextChanged { text, _, _, _ ->
-                //onBikeUpdated(bike.copy(price = text.toString()))
+                onBikeUpdated(bike.copy(price = text.toString()))
+            }
+            rentDurationEditText.doOnTextChanged { text, _, _, _ ->
+                if(!text.isNullOrBlank())
+                onBikeUpdated(bike.copy(rentDuration = text.toString().toLong()))
             }
 
             colorLinearLayout.removeAllViews()

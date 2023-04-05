@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bicycle.databinding.FragmentMainBinding
 import com.bicycle.model.Bike
+import com.bicycle.model.StatusBike
 import com.bicycle.repository.BikeRepository
 
 
@@ -44,6 +45,8 @@ class MainFragment : Fragment() {
         bikeAdapter = BikeAdapter(requireContext(),
             onItemClickListener = { bike ->
                 // Обработка нажатия на элемент
+                if(bike.status==StatusBike.WAIT_FOR_CANCEL)
+                viewModel.pressBike(bike)
             },
             onItemLongClickListener = { bike ->
                 view.isPressed = true

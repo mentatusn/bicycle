@@ -13,5 +13,7 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Dark system bar icons. -->
         <item name="android:windowLightStatusBar">true</item>
+
+        <item name="android:fontFamily">@font/roboto_medium</item>
     </style>
 </resources>

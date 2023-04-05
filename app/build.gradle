@@ -7,6 +7,11 @@ android {
     namespace 'com.bicycle'
     compileSdk 33
 
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+    }
+
     defaultConfig {
         applicationId "com.bicycle"
         minSdk 24
@@ -36,6 +41,21 @@ android {
 }
 
 dependencies {
+
+    implementation ('com.google.apis:google-api-services-sheets:v4-rev581-1.25.0') {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
+
+    implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
+
+    /*implementation 'com.google.android.gms:play-services-auth:20.4.1'
+    implementation 'com.google.android.gms:play-services-drive:17.0.0'
+    implementation 'com.google.android.gms:play-services-identity:20.1.0'
+    implementation 'com.google.android.gms:play-services-sheets:20.1.0'
+    implementation 'com.google.api-client:google-api-client-android:1.23.0'
+    implementation 'com.google.oauth-client:google-oauth-client-jetty:1.31.0'
+    implementation 'com.google.apis:google-api-services-sheets:v4-rev1-1.25.0'*/
+
 
     implementation "androidx.work:work-runtime:2.8.1"
     implementation "androidx.work:work-runtime-ktx:2.8.1"
