@@ -10,4 +10,11 @@
     <string name="bike_rented">Арендован</string>
     <string name="bike_cancelled">Отмена</string>
     <string name="bike_closed">Закрыли</string>
+
+    <string name="active_status">арендован</string>
+    <string name="minutes">мин.</string>
+    <string name="wait_for_cancel_status">ожидание закрытия поездки кассиром</string>
+    <string name="canceled_status">отменен</string>
+    <string name="idle_status">бездействие</string>
+    <string name="duration_format">%02d:%02d</string>
 </resources>

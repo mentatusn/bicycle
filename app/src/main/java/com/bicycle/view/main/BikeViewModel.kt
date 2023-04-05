@@ -10,9 +10,9 @@ import com.bicycle.repository.BikeRepository
 import kotlinx.coroutines.launch
 
 class BikeViewModel(
-    private val context: Application,
-    private val repository: BikeRepository = BikeRepository()
+    private val context: Application
 ) : AndroidViewModel(context) {
+    private val repository: BikeRepository = BikeRepository()
     val bikes = repository.bikes
     val appStateLiveData = repository.appStateLiveData
 

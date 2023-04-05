@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.bicycle.MyApplication
 import com.bicycle.R
 import com.bicycle.databinding.FragmentMainBinding
 import com.bicycle.model.StatusBike
@@ -37,11 +38,9 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this)[BikeViewModel::class.java]
+        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application))[BikeViewModel::class.java]
 
-        bikeAdapter = BikeAdapter(requireContext(),
-            onItemClickListener = { bike ->
-                // Обработка нажатия на элемент
+        bikeAdapter = BikeAdapter( onItemClickListener = { bike ->
                 if(bike.status==StatusBike.WAIT_FOR_CANCEL)
                 viewModel.pressBike(bike)
             },

@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class BikeAdapter(private val context: Context, val onItemClickListener: ((Bike) -> Unit)? = null, val onItemLongClickListener: ((Bike) -> Boolean)? = null) : RecyclerView.Adapter<BikeAdapter.ViewHolder>() {
+class BikeAdapter(val onItemClickListener: ((Bike) -> Unit)? = null, val onItemLongClickListener: ((Bike) -> Boolean)? = null) : RecyclerView.Adapter<BikeAdapter.ViewHolder>() {
 
     private var bikes: List<Bike> = listOf()
     private var selectedPosition: Int? = null
@@ -102,15 +102,7 @@ class BikeAdapter(private val context: Context, val onItemClickListener: ((Bike)
             tvPrice.text = "${bike.price}"
             tvDuration.text = "${bike.rentDuration}мин."
             tvStartTime.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(bike.startTime)
-            //tvTimer.text = SimpleDateFormat("mm:ss", Locale.getDefault()).format(bike.endTime)
             tvEndTime.text = formatDuration(bike.endTime)
-
-
-
-
-
-           // val itemHeight = ((itemView.parent as ViewGroup).height * 0.25).toInt() - 4
-           // itemView.layoutParams = AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, itemHeight)
         }
     }
 
@@ -136,7 +128,6 @@ class BikeAdapter(private val context: Context, val onItemClickListener: ((Bike)
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             val oldBike = oldList[oldItemPosition]
             val newBike = newList[newItemPosition]
-            //return (oldBike == newBike&&newBike.status!=StatusBike.WAIT_FOR_CANCEL)
             return (oldBike.endTime == newBike.endTime&&oldBike.status == newBike.status&&newBike.status!=StatusBike.WAIT_FOR_CANCEL)
         }
     }
