@@ -17,7 +17,7 @@
         android:theme="@style/Theme.Bicycle"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".view.MainActivity"
             android:screenOrientation="landscape"
             android:exported="true">
             <intent-filter>

@@ -1,4 +1,4 @@
-package com.bicycle
+package com.bicycle.view
 
 
 import android.os.Bundle
@@ -8,9 +8,10 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.bicycle.R
 import com.bicycle.databinding.ActivityMainBinding
 import com.bicycle.util.Const
-import com.bicycle.view.MainFragment
+import com.bicycle.view.main.MainFragment
 import com.bicycle.view.settings.SettingsFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 

@@ -1,4 +1,4 @@
-package com.bicycle.view
+package com.bicycle.view.main
 
 import android.app.Activity
 import android.content.Context
