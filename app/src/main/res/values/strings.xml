@@ -6,4 +6,8 @@
     <string name="incorrect_password_text">Неверный пароль</string>
 
     <string name="error">Error:</string>
+
+    <string name="bike_rented">Арендован</string>
+    <string name="bike_cancelled">Отмена</string>
+    <string name="bike_closed">Закрыли</string>
 </resources>
