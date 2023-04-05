@@ -37,8 +37,6 @@ val transitions = mapOf(
 
 
 class StatusBikeMapper {
-
-
     fun toString(statusBike: StatusBike): String {
         return when (statusBike) {
             StatusBike.IDLE -> "Idle"
@@ -47,7 +45,6 @@ class StatusBikeMapper {
             StatusBike.CANCELED -> "Canceled"
         }
     }
-
     fun fromString(str: String): StatusBike {
         return when (str.toLowerCase(Locale.getDefault())) {
             "idle" -> StatusBike.IDLE

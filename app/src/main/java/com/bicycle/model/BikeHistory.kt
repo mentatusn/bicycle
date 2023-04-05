@@ -1,9 +1,5 @@
 package com.bicycle.model
 
-data class BikeHistory(
-    val bikeId: Int,
-    val history: List<BikeStatusChange>
-)
 
 data class BikeStatusChange(
     val bikeId: Int,

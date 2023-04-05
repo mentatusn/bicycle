@@ -3,8 +3,12 @@ package com.bicycle.util
 object Const {
     const val rentDuration = 20L
     const val alarmTimerHolder = 5000
-    const val sharedBikeHistoryKey = "bikes_data"
-    const val sharedBikeKey = "bikes5"
+    const val sharedBikeDB = "bikes_db"
+    const val sharedBike = "bikes"
+
+    const val sharedBikeStatusHistoryDB = "bikes_history_db"
+    const val sharedBikeStatusHistory = "status_changes"
+
     const val holderGoogle  = 4
     const val password = "1234"
     const val price = "1000тг."
