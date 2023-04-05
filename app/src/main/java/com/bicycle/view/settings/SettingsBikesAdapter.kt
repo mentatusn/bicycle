@@ -1,13 +1,10 @@
 package com.bicycle.view.settings
 
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.LayerDrawable
-import android.icu.util.UniversalTimeScale.toLong
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
-import androidx.core.content.ContextCompat
+import android.widget.EditText
+import android.widget.LinearLayout
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import com.bicycle.R
@@ -19,10 +16,6 @@ class SettingsBikesAdapter(
     private val onBikeUpdated: (Bike) -> Unit
 ) : RecyclerView.Adapter<SettingsBikesAdapter.BikeViewHolder>() {
 
-    fun updateBikes(newBikes: List<Bike>) {
-        bikes = newBikes
-        notifyDataSetChanged()
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BikeViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -80,9 +73,6 @@ class SettingsBikesAdapter(
                 colorLinearLayout.addView(colorView)
             }
             colorLinearLayout.setBackgroundColor(bike.color)
-
-
-            // Добавьте обработчики изменений для других полей
         }
     }
 }

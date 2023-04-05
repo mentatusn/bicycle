@@ -1,19 +1,20 @@
 package com.bicycle.view
 
-import android.graphics.Color
+import android.app.Activity
+import android.content.Context
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.bicycle.R
 import com.bicycle.databinding.FragmentMainBinding
-import com.bicycle.model.Bike
 import com.bicycle.model.StatusBike
-import com.bicycle.repository.BikeRepository
+import com.bicycle.repository.AppState
 
 
 class MainFragment : Fragment() {
@@ -31,16 +32,12 @@ class MainFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMainBinding.inflate(inflater, container, false)
-
-
-
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this).get(BikeViewModel::class.java)
+        viewModel = ViewModelProvider(this)[BikeViewModel::class.java]
 
         bikeAdapter = BikeAdapter(requireContext(),
             onItemClickListener = { bike ->
@@ -51,7 +48,7 @@ class MainFragment : Fragment() {
             onItemLongClickListener = { bike ->
                 view.isPressed = true
                 viewModel.pressBike(bike)
-                true // возвращаем true, чтобы сказать, что событие обработано
+                true
             }
         )
         binding.gridView.adapter = bikeAdapter
@@ -61,8 +58,27 @@ class MainFragment : Fragment() {
             bikeAdapter.updateData(bikes)
         }
 
+        viewModel.appStateLiveData.observe(viewLifecycleOwner) { appState ->
+            render(appState)
+        }
+
     }
 
+    private fun render(appState: AppState) {
+        when (appState) {
+            is AppState.Success -> {
+                showToast(requireContext(), appState.message)
+            }
+            is AppState.Error -> {
+                showErrorDialog(requireContext(), getString(R.string.error), appState.message)
+            }
+            AppState.Loading -> {}
+        }
+    }
+
+    private fun showToast(context: Context, message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
 
 
 
@@ -70,4 +86,22 @@ class MainFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+    /**
+     * Displays an error dialog with the given title and message.
+     * @param context the context of the calling activity
+     * @param title the title of the dialog
+     * @param message the message to display
+     */
+    private fun showErrorDialog(context: Context, title: String, message: String) {
+        (context as Activity).runOnUiThread {
+            val dialogBuilder = AlertDialog.Builder(context)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(context.getString(R.string.ok_button_text)) { _, _ -> }
+            val dialog = dialogBuilder.create()
+            dialog.show()
+        }
+    }
+
 }

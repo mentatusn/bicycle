@@ -6,13 +6,9 @@ import android.content.Context
 import android.graphics.Color
 import android.media.Ringtone
 import android.media.RingtoneManager
-import android.os.Build.VERSION_CODES.P
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AbsListView
-import android.widget.BaseAdapter
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView

@@ -1,15 +1,14 @@
 package com.bicycle
 
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.InputType
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.bicycle.databinding.ActivityMainBinding
-
 import com.bicycle.util.Const
 import com.bicycle.view.MainFragment
 import com.bicycle.view.settings.SettingsFragment
@@ -17,10 +16,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 
 class MainActivity : AppCompatActivity() {
-    companion object {
-        lateinit var instance: MainActivity
-            private set
-    }
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var settingsFab: FloatingActionButton
@@ -30,8 +25,6 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        instance = this
 
         // Set a flag to display the activity in fullscreen mode
         window.setFlags(
