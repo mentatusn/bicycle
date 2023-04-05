@@ -46,7 +46,7 @@ class StatusBikeMapper {
         }
     }
     fun fromString(str: String): StatusBike {
-        return when (str.toLowerCase(Locale.getDefault())) {
+        return when (str.lowercase()) {
             "idle" -> StatusBike.IDLE
             "active" -> StatusBike.ACTIVE
             "wait_for_cancel" -> StatusBike.WAIT_FOR_CANCEL

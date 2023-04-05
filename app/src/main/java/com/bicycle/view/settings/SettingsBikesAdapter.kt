@@ -61,7 +61,7 @@ class SettingsBikesAdapter(
 
             colorLinearLayout.removeAllViews()
             colorLinearLayout.setBackgroundColor(bike.color)
-            randomColors.forEachIndexed { index, color ->
+            randomColors.forEachIndexed { _, color ->
                 val colorView = View(itemView.context).apply {
                     layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
                     setBackgroundColor(color)

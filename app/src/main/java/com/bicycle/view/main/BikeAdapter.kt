@@ -106,7 +106,6 @@ class BikeAdapter(val onItemClickListener: ((Bike) -> Unit)? = null, val onItemL
     }
 
     private fun formatDuration(timestamp: Long): String {
-        val hours = TimeUnit.MILLISECONDS.toHours(timestamp)
         val minutes = TimeUnit.MILLISECONDS.toMinutes(timestamp)
         val seconds = TimeUnit.MILLISECONDS.toSeconds(timestamp - TimeUnit.MINUTES.toMillis(minutes))
         return String.format("%02d:%02d", minutes, seconds)
