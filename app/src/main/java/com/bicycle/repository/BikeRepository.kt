@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
 
 class BikeRepository {
     private val sharedPreferences: SharedPreferences =
-        MyApplication.applicationContext().getSharedPreferences("bikes_data", Context.MODE_PRIVATE)
+        MyApplication.applicationContext().getSharedPreferences(Const.sharedBikeHistoryKey, Context.MODE_PRIVATE)
 
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.Main + job)
@@ -41,7 +41,7 @@ class BikeRepository {
     fun getBikes(): List<Bike> = _bikes.value ?: emptyList()
 
     private fun loadBikes() {
-        if (sharedPreferences.getString(Const.sharedKey, null) == null) {
+        if (sharedPreferences.getString(Const.sharedBikeKey, null) == null) {
             saveBikesData(fillBikesData())
         }
         _bikes.value = loadBikesData()
@@ -327,12 +327,12 @@ class BikeRepository {
     private fun saveBikesData(bikes: List<Bike>) {
         val editor = sharedPreferences.edit()
         val json = Gson().toJson(bikes)
-        editor.putString(Const.sharedKey, json)
+        editor.putString(Const.sharedBikeKey, json)
         editor.apply()
     }
 
     private fun loadBikesData(): List<Bike> {
-        val json = sharedPreferences.getString(Const.sharedKey, null)
+        val json = sharedPreferences.getString(Const.sharedBikeKey, null)
         val type = object : TypeToken<List<Bike>>() {}.type
         return Gson().fromJson(json, type)
     }
