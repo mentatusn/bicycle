@@ -1,4 +1,4 @@
-package com.bicycle.view.main
+package com.bicycle.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

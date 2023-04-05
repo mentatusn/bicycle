@@ -14,10 +14,11 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bicycle.R
 import com.bicycle.databinding.FragmentMainBinding
 import com.bicycle.model.StatusBike
-import com.bicycle.repository.AppState
+import com.bicycle.viewmodel.AppState
+import com.bicycle.viewmodel.BikeViewModel
 
 
-class MainFragment : Fragment() {
+class BikeFragment : Fragment() {
 
 
     private lateinit var viewModel: BikeViewModel

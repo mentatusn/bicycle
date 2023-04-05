@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bicycle.R
 import com.bicycle.databinding.ActivityMainBinding
 import com.bicycle.util.Const
-import com.bicycle.view.main.MainFragment
+import com.bicycle.view.main.BikeFragment
 import com.bicycle.view.settings.SettingsFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         )
 
-        supportFragmentManager.beginTransaction().replace(binding.container.id, MainFragment()).commit()
+        supportFragmentManager.beginTransaction().replace(binding.container.id, BikeFragment()).commit()
 
         supportFragmentManager.addOnBackStackChangedListener { setFabIcon() }
 

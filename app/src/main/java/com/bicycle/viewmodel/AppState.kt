@@ -1,4 +1,4 @@
-package com.bicycle.repository
+package com.bicycle.viewmodel
 
 sealed class AppState {
     data class Success(val message: String="") : AppState()
