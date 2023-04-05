@@ -11,7 +11,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import com.bicycle.MyApplication
 import com.bicycle.R
 import com.bicycle.databinding.FragmentMainBinding
 import com.bicycle.model.StatusBike

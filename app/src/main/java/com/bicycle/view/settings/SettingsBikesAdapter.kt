@@ -9,7 +9,7 @@ import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import com.bicycle.R
 import com.bicycle.model.Bike
-import com.bicycle.repository.randomColors
+import com.bicycle.util.randomColors
 
 class SettingsBikesAdapter(
     private var bikes: List<Bike>,

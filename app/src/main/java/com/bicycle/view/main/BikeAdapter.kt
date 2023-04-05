@@ -2,7 +2,6 @@ package com.bicycle.view.main
 
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
-import android.content.Context
 import android.graphics.Color
 import android.media.Ringtone
 import android.media.RingtoneManager

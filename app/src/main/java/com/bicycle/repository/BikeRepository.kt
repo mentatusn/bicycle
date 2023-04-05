@@ -2,12 +2,12 @@ package com.bicycle.repository
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.bicycle.MyApplication
 import com.bicycle.model.*
 import com.bicycle.util.Const
+import com.bicycle.util.randomColors
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class BikeRepository() {
+class BikeRepository {
     private val sharedPreferences: SharedPreferences =
         MyApplication.applicationContext().getSharedPreferences("bikes_data", Context.MODE_PRIVATE)
 
@@ -48,7 +48,14 @@ class BikeRepository() {
     }
 
 
-    fun updateBike(bike: Bike,text:String="",onBikeUpdated: () -> Unit) {
+    /**
+     * Updates the bike information and saves the updated data.
+     *
+     * @param bike The bike object with updated information.
+     * @param text The text to be displayed on success.
+     * @param onBikeUpdated A function to be called when the bike is successfully updated.
+     */
+    fun updateBike(bike: Bike, text: String = "", onBikeUpdated: () -> Unit) {
         val bikes = loadBikesData().toMutableList()
         val index = bikes.indexOfFirst { it.id == bike.id }
         if (bikes.size > 0 && index != -1) {
@@ -56,7 +63,7 @@ class BikeRepository() {
             saveBikesData(bikes)
             Thread {
                 try {
-                    sliceHistory(bike)
+                    processBikeHistory(bike)
                     _appStateLiveData.postValue(AppState.Success(text))
                     onBikeUpdated()
                 } catch (e: GoogleJsonResponseException) {
@@ -66,120 +73,150 @@ class BikeRepository() {
         }
     }
 
-    private fun sliceHistory(bike: Bike) {
+    /**
+     * Processes the bike's history by adding a new status change if necessary and writing the report to Google Sheets.
+     *
+     * @param bike The bike object to process.
+     */
+    private fun processBikeHistory(bike: Bike) {
         val bikeHistoryRepository = BikeHistoryRepository()
-        val currentTimestamp = System.currentTimeMillis()
-        var lastStatusChange = bikeHistoryRepository.getLastStatusChangeForBike(bike.id)
-        if (lastStatusChange == null || lastStatusChange.toStatus != bike.status) {
-            val statusChange =
-                BikeStatusChange(
-                    bike.id,
-                    bike.name,
-                    currentTimestamp,
-                    lastStatusChange?.toStatus ?: StatusBike.IDLE,
-                    bike.status
-                )
-            bikeHistoryRepository.addStatusChange(statusChange)
-            if (lastStatusChange?.toStatus != StatusBike.ACTIVE && lastStatusChange?.toStatus != StatusBike.WAIT_FOR_CANCEL) {
-                return
-            }
-            val today = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date())
 
-
-            val values = listOf(
-                statusChange.bikeName,
-                "Из \"${StatusBikeMapper().toString(lastStatusChange.toStatus)}\" ${
-                    formatTimestamp(
-                        lastStatusChange.timestamp
-                    )
-                }",
-                "В \"${StatusBikeMapper().toString(statusChange.toStatus)}\" ${
-                    formatTimestamp(
-                        statusChange.timestamp
-                    )
-                }",
-                transitions[lastStatusChange.toStatus]?.get(statusChange.toStatus) ?: "???",
-                "Длительность ${formatDuration(statusChange.timestamp - lastStatusChange.timestamp)}"
-            )
-            var values2 = mutableListOf<List<String>>()
-
-            getBikes().forEach { itBike ->
-                bikeHistoryRepository.loadStatusChanges().filter {
-                    (it.bikeId == itBike.id) && (it.timestamp > (System.currentTimeMillis() - 24 * 60 * 60 * 1000))
-                }
-                    .forEach { statusChange1 ->
-                        //lastStatusChange!!.toStatus!=StatusBike.CANCELED&&
-                        //&&statusChange1?.toStatus!=StatusBike.WAIT_FOR_CANCEL
-                        if (statusChange1?.toStatus != StatusBike.ACTIVE)
-                            values2.add(
-                                listOf(
-                                    statusChange1.bikeName,
-                                    "Из \"${StatusBikeMapper().toString(lastStatusChange!!.toStatus)} ${
-                                        formatTimestamp(
-                                            lastStatusChange!!.timestamp
-                                        )
-                                    }\"",
-                                    "В \"${StatusBikeMapper().toString(statusChange1.toStatus)} ${
-                                        formatTimestamp(
-                                            statusChange1.timestamp
-                                        )
-                                    }\"",
-                                    transitions[lastStatusChange!!.toStatus]?.get(statusChange1.toStatus)
-                                        ?: "???",
-                                    "Длительность ${formatDuration(statusChange1.timestamp - lastStatusChange!!.timestamp)}",
-                                    formatTimestamp(statusChange1.timestamp)
-                                )
-                            )
-                        lastStatusChange = statusChange1
-                    }
-            }
-
-            values2.sortBy { it[5] }
-            values2 = values2.map {
-                listOf(it[0], it[1], it[2], it[3], it[4])
-            }.toMutableList()
-            val httpTransport = NetHttpTransport()
-            val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
-            val serviceAccountPath =
-                MyApplication.applicationContext().assets.open("augmented-ward-357019-f7f6d5778329.json")
-             val credential =
-                GoogleCredential.fromStream(serviceAccountPath, httpTransport, jsonFactory)
-                    .createScoped(listOf("https://www.googleapis.com/auth/spreadsheets"))
-            val sheetsService = Sheets.Builder(httpTransport, jsonFactory, credential)
-                .setApplicationName("My App Name")
-                .build()
-
-            if (values2.isNotEmpty())
-                writeDataAndClear(
-                    sheetsService,
-                    Const.sheetId,
-                    "${Const.sheet3}!A1:E${values2.size + 1000}", values2
-                )
-            val rows = sheetsService.spreadsheets().values()
-                .get(Const.sheetId, "${Const.sheet2}!A:A")
-                .execute()
-                .getValues()
-            val lastRowIndex = if (rows != null) rows.size else 0
-            val range = "${Const.sheet2}!A${lastRowIndex + 1}:E${lastRowIndex + values.size}"
-            if (values.isNotEmpty())
-                appendData(
-                    sheetsService,
-                    Const.sheetId,
-                    range, (listOf(values))
-                )
-
-
+        val newStatusChange = addNewStatusChangeIfNeeded(bike, bikeHistoryRepository)
+        if (newStatusChange != null) {
+            val statusChangesReport = prepareStatusChangeReport(bikeHistoryRepository)
+            writeToSheets(statusChangesReport)
         }
     }
 
+    /**
+     * Adds a new status change to the bike's history if the bike's status has changed.
+     *
+     * @param bike The bike object to check for status changes.
+     * @param bikeHistoryRepository The BikeHistoryRepository instance to interact with bike history data.
+     * @return The new BikeStatusChange object if a new status change was added, otherwise null.
+     */
+    private fun addNewStatusChangeIfNeeded(
+        bike: Bike,
+        bikeHistoryRepository: BikeHistoryRepository
+    ): BikeStatusChange? {
+        val currentTimestamp = System.currentTimeMillis()
+        val lastStatusChange = bikeHistoryRepository.getLastStatusChangeForBike(bike.id)
+
+        if (lastStatusChange == null || lastStatusChange.toStatus != bike.status) {
+            val statusChange = BikeStatusChange(
+                bike.id,
+                bike.name,
+                currentTimestamp,
+                lastStatusChange?.toStatus ?: StatusBike.IDLE,
+                bike.status
+            )
+            bikeHistoryRepository.addStatusChange(statusChange)
+            return statusChange
+        }
+
+        return null
+    }
+
+    /**
+     * Prepares a report of recent status changes for all bikes in the repository.
+     *
+     * @param bikeHistoryRepository The repository containing bike history data.
+     * @return A list of rows representing status change information, where each row is a list of strings.
+     */
+    private fun prepareStatusChangeReport(bikeHistoryRepository: BikeHistoryRepository): List<List<String>> {
+        val bikes = getBikes()
+        val statusChangeRows = mutableListOf<List<String>>()
+
+        bikes.forEach { bike ->
+            val recentStatusChanges = bikeHistoryRepository.loadStatusChanges().filter {
+                (it.bikeId == bike.id) && (it.timestamp > (System.currentTimeMillis() - 24 * 60 * 60 * 1000))
+            }
+
+            var previousStatusChange: BikeStatusChange? = null
+            recentStatusChanges.forEach { currentStatusChange ->
+                if (currentStatusChange.toStatus != StatusBike.ACTIVE && previousStatusChange != null) {
+                    previousStatusChange?.let {
+                        statusChangeRows.add(createStatusChangeRow(it, currentStatusChange))
+                    }
+                }
+                previousStatusChange = currentStatusChange
+            }
+        }
+
+        statusChangeRows.sortBy { it[5] }
+        return statusChangeRows.map { listOf(it[0], it[1], it[2], it[3], it[4]) }
+    }
+
+    /**
+     * Creates a row representing a status change event for a bike.
+     *
+     * @param lastStatusChange The previous status change event of the bike.
+     * @param statusChange The current status change event of the bike.
+     * @return A list of strings representing the details of the status change event.
+     */
+    private fun createStatusChangeRow(
+        lastStatusChange: BikeStatusChange,
+        statusChange: BikeStatusChange
+    ): List<String> {
+        val statusBikeMapper = StatusBikeMapper()
+        return listOf(
+            statusChange.bikeName,
+            "From \"${statusBikeMapper.toString(lastStatusChange.toStatus)}\" ${formatTimestamp(lastStatusChange.timestamp)}",
+            "To \"${statusBikeMapper.toString(statusChange.toStatus)}\" ${formatTimestamp(statusChange.timestamp)}",
+            transitions[lastStatusChange.toStatus]?.get(statusChange.toStatus) ?: "???",
+            "Duration ${formatDuration(statusChange.timestamp - lastStatusChange.timestamp)}",
+            formatTimestamp(statusChange.timestamp)
+        )
+    }
+
+    /**
+     * Writes the status changes report to Google Sheets.
+     *
+     * @param statusChangesReport A list of lists representing the status changes report to be written to Google Sheets.
+     */
+    private fun writeToSheets(statusChangesReport: List<List<String>>) {
+        val sheetsService = createSheetsService()
+        val rows = sheetsService.spreadsheets().values()
+            .get(Const.SHEET_ID, "${Const.SHEET2}!A:A")
+            .execute()
+            .getValues()
+        val lastRowIndex = rows?.size ?: 0
+        val range = "${Const.SHEET2}!A${lastRowIndex + 1}:E${lastRowIndex + statusChangesReport.size}"
+
+        if (statusChangesReport.isNotEmpty()) {
+            writeDataAndClear(sheetsService, Const.SHEET_ID, "${Const.SHEET3}!A1:E${statusChangesReport.size + 1000}", statusChangesReport)
+            appendData(sheetsService, Const.SHEET_ID, range, statusChangesReport)
+        }
+    }
+
+    /**
+     * Creates a Sheets instance for interacting with the Google Sheets API.
+     *
+     * @return A Sheets instance for interacting with the Google Sheets API.
+     */
+    private fun createSheetsService(): Sheets {
+        val httpTransport = NetHttpTransport()
+        val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
+        val serviceAccountPath =
+            MyApplication.applicationContext().assets.open("augmented-ward-357019-f7f6d5778329.json")
+        val credential =
+            GoogleCredential.fromStream(serviceAccountPath, httpTransport, jsonFactory)
+                .createScoped(listOf("https://www.googleapis.com/auth/spreadsheets"))
+        return Sheets.Builder(httpTransport, jsonFactory, credential)
+            .setApplicationName("My App Name")
+            .build()
+    }
+
+
+
     private fun startGlobalTimer() {
         scope.launch(Dispatchers.IO) {
-            var count = 0
             var down = Const.holderGoogle
+            var prevActiveBikesSize = -1
             while (isActive) {
                 val bikes = loadBikesData()
+                val activeBikes = bikes.filter { it.status == StatusBike.ACTIVE || it.status == StatusBike.WAIT_FOR_CANCEL }
                 val updatedBikes = bikes.map { bike ->
-
                     if (bike.endTime == 1L && bike.status == StatusBike.IDLE) {
                         bike.endTime = 0L
                     }
@@ -188,12 +225,11 @@ class BikeRepository() {
                     }
 
                     if (bike.status == StatusBike.ACTIVE || bike.status == StatusBike.WAIT_FOR_CANCEL) {
-                        bike.endTime =
-                            bike.startTime + bike.rentDuration * 60 * 1000 - System.currentTimeMillis()
+                        bike.endTime = bike.startTime + bike.rentDuration * 60 * 1000 - System.currentTimeMillis()
                         if (bike.endTime <= Const.alarmTimerHolder) {
                             if (bike.status != StatusBike.WAIT_FOR_CANCEL) {
                                 bike.status = StatusBike.WAIT_FOR_CANCEL
-                                sliceHistory(bike)
+                                processBikeHistory(bike)
                             }
                         }
                         if (bike.endTime <= 0) {
@@ -207,78 +243,76 @@ class BikeRepository() {
                 saveBikesData(updatedBikes)
                 _bikes.postValue(updatedBikes)
 
-                try {
-                    val delete =
-                        count != bikes.filter { it.status == StatusBike.ACTIVE || it.status == StatusBike.WAIT_FOR_CANCEL }.size
-                    if (delete || (--down < 0)) {
-                        sliceCurrentActivity(
-                            bikes, delete
-                        )
-                        down = Const.holderGoogle
-                    }
-                } catch (e: GoogleJsonResponseException) {
-                    _appStateLiveData.value = AppState.Error(e.details.errors[0].message)
-                    delay(60000) // Перенести работу корутины на минуту
-                } finally {
-                    count =
-                        bikes.filter { it.status == StatusBike.ACTIVE || it.status == StatusBike.WAIT_FOR_CANCEL }.size
-                    delay(1000)
+                if (activeBikes.size != prevActiveBikesSize || (--down < 0)) {
+                    sliceCurrentActivity(activeBikes, activeBikes.size != prevActiveBikesSize)
+                    prevActiveBikesSize = activeBikes.size
+                    down = Const.holderGoogle
                 }
 
+                delay(500)
             }
         }
     }
 
-    suspend private fun sliceCurrentActivity(
-        bikes: List<Bike>,
-        delete: Boolean
-    ) {
-        val values =
-            bikes.filter { it.status == StatusBike.ACTIVE || it.status == StatusBike.WAIT_FOR_CANCEL }
-                .map { bike ->
-                    val start = formatTimestamp(bike.startTime)
-                    val end = formatTimestamp(bike.startTime + bike.rentDuration * 60 * 1000)
-                    val remaining = formatDuration(bike.endTime)
-                    listOf(bike.name, start, end, remaining)
-                }
-        val httpTransport = NetHttpTransport()
-        val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
-        //val serviceAccountPath = "path/to/your-service-account-key.json"
-        //val serviceAccountPath = "app/src/main/assets/augmented-ward-357019-f7f6d5778329.json"
-        val serviceAccountPath =
-            MyApplication.applicationContext().assets.open("augmented-ward-357019-f7f6d5778329.json")
-        //val credential = GoogleCredential.fromStream(FileInputStream(serviceAccountPath), httpTransport, jsonFactory).createScoped(listOf("https://www.googleapis.com/auth/spreadsheets"))
-        val credential =
-            GoogleCredential.fromStream(serviceAccountPath, httpTransport, jsonFactory)
-                .createScoped(listOf("https://www.googleapis.com/auth/spreadsheets"))
-        val sheetsService = Sheets.Builder(httpTransport, jsonFactory, credential)
-            .setApplicationName("My App Name")
-            .build()
-        if (values.isNotEmpty() || delete) {
-            if (delete) {
-                Log.d("mylogs", "delete")
+    /**
+     * Сохраняет данные по текущей активности в Google Sheets
+     *
+     * @param bikes список велосипедов, находящихся в текущей активности
+     * @param delete флаг, указывающий на необходимость удаления данных из таблицы
+     */
+    private suspend fun sliceCurrentActivity(bikes: List<Bike>, delete: Boolean) {
+        val values = bikes
+            .filter { it.status == StatusBike.ACTIVE || it.status == StatusBike.WAIT_FOR_CANCEL }
+            .map { bike ->
+                val start = formatTimestamp(bike.startTime)
+                val end = formatTimestamp(bike.startTime + bike.rentDuration * 60 * 1000)
+                val remaining = formatDuration(bike.endTime)
+                listOf(bike.name, start, end, remaining)
+            }
 
+        if (values.isNotEmpty() || delete) {
+            val sheetsService = getSheetsService()
+
+            if (delete) {
                 writeDataAndClear(
                     sheetsService,
-                    Const.sheetId,
-                    "${Const.sheet1}!A1:D${values.size + 1000}",
+                    Const.SHEET_ID,
+                    "${Const.SHEET1}!A1:D${values.size + 1000}",
                     values
                 )
             } else {
-                Log.d("mylogs", "undelete")
                 writeData(
                     sheetsService,
-                    Const.sheetId,
-                    "${Const.sheet1}!A1:D${values.size + 1}",
+                    Const.SHEET_ID,
+                    "${Const.SHEET1}!A1:D${values.size + 1}",
                     values
                 )
             }
         }
+    }
+
+
+    /**
+     * Получает экземпляр класса Sheets с использованием учетных данных из файла json.
+     *
+     * @return экземпляр класса Sheets
+     */
+    private fun getSheetsService(): Sheets {
+        val httpTransport = NetHttpTransport()
+        val jsonFactory: JsonFactory = JacksonFactory.getDefaultInstance()
+        val credentials = GoogleCredential.fromStream(
+            MyApplication.applicationContext().assets.open(Const.GOOGLE_CREDENTIAL_FILE)
+        )
+        val scopedCredentials = credentials.createScoped(listOf("https://www.googleapis.com/auth/spreadsheets"))
+
+        return Sheets.Builder(httpTransport, jsonFactory, scopedCredentials)
+            .setApplicationName("My App Name")
+            .build()
     }
 
     private fun formatTimestamp(timestamp: Long): String {
         val date = Date(timestamp)
-        val format = SimpleDateFormat("dd.MM HH:mm:ss")
+        val format = SimpleDateFormat("dd.MM HH:mm:ss", Locale.getDefault())
         return format.format(date)
     }
 
@@ -316,22 +350,5 @@ class BikeRepository() {
         )
     }.toMutableList()
 
-
 }
 
-val randomColors = listOf(
-    0xFF9ad2ae.toInt(),
-    0xFFf8a98e.toInt(),
-    0xFFfcd2c0.toInt(),
-    0xFFf5adce.toInt(),
-    0xFFcb90ac.toInt(),
-    0xFFf05972.toInt(),
-    0xFFf38480.toInt(),
-    0xFF00aeef.toInt(),
-    0xFFc656a0.toInt(),
-    0xFFfeca0a.toInt(),
-    0xFF00a54f.toInt()
-)
-
-
-//0xFFcbe6d3.toInt(),
