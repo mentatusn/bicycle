@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">bicycle</string>
+    <string name="app_name">bicycle2</string>
 
     <string name="enter_password_title">Введите пароль</string>
     <string name="ok_button_text">OK</string>
